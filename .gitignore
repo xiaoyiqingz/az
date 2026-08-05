@@ -52,6 +52,7 @@ logs/
 *.temp
 agentz_history
 agentz_message_history.json
+agentz-web.sh
 skills-lock.json
 
 # Project-local Codex skills

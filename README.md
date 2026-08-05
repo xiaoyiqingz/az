@@ -165,3 +165,13 @@ example:
 ```bash
 make build-onedir CODESIGN_IDENTITY="Developer ID Application: Your Name"
 ```
+## Web 服务后台管理
+
+在项目目录使用以下脚本后台启动、停止或重启 Web 服务；服务输出不会保留日志：
+
+```bash
+./agentz-web.sh start
+./agentz-web.sh status
+./agentz-web.sh restart
+./agentz-web.sh stop
+```
