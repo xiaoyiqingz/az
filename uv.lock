@@ -22,6 +22,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "pydantic-evals" },
     { name = "pyinstaller" },
 ]
 
@@ -41,7 +42,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pyinstaller", specifier = ">=6.21.0" }]
+dev = [
+    { name = "pydantic-evals", specifier = "==2.14.1" },
+    { name = "pyinstaller", specifier = ">=6.21.0" },
+]
 
 [[package]]
 name = "aiofile"
