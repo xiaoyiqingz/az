@@ -35,7 +35,7 @@ class TestOutputFormatter(unittest.TestCase):
         self.assertFalse(formatter.markdown_formatter.show_stream)
 
         formatter.markdown_formatter.console = Mock()
-        formatter.add_chunk("| Name | Value |\n| --- | --- |\n| AgentZ | Rich |")
+        formatter.add_chunk("| Name | Value |\n| --- | --- |\n| AZ | Rich |")
         formatter.render_final()
 
         formatter.markdown_formatter.console.print.assert_called_once()

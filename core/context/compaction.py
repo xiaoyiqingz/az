@@ -1,4 +1,4 @@
-"""Harness-based conversation compaction for AgentZ sessions."""
+"""Harness-based conversation compaction for AZ sessions."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def file_read_key(call: ToolCallPart) -> str | None:
 
 
 def build_compaction(settings: Settings) -> TieredCompaction:
-    """Build the cheap-to-expensive context budget policy for an AgentZ run."""
+    """Build the cheap-to-expensive context budget policy for an AZ run."""
     return TieredCompaction(
         tiers=[
             ClampOversizedMessages(

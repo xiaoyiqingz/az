@@ -13,11 +13,11 @@ from .models import ConversationSummary, SessionMeta, UsageLimitRecovery
 class SessionStore:
     """Persist session-scoped context artifacts on disk."""
 
-    def __init__(self, agentz_home: Path, session_id: str):
-        self.agentz_home = agentz_home
+    def __init__(self, az_home: Path, session_id: str):
+        self.az_home = az_home
         self.session_id = session_id
-        self._session_dir = self.agentz_home / "sessions" / session_id
-        self.message_history_path = self._session_dir / "agentz_message_history.json"
+        self._session_dir = self.az_home / "sessions" / session_id
+        self.message_history_path = self._session_dir / "az_message_history.json"
         self.meta_path = self._session_dir / "session_meta.json"
         self.summary_path = self._session_dir / "conversation_summary.json"
         self.usage_limit_recovery_path = self._session_dir / "usage_limit_recovery.json"

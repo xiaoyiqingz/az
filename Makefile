@@ -1,8 +1,8 @@
-APP_NAME := agentz
+APP_NAME := az
 ENTRYPOINT := main.py
 DIST_DIR := dist
 BUILD_DIR := build
-PYINSTALLER := uv run pyinstaller
+PYINSTALLER := uv run --group dev python -m PyInstaller
 OS_NAME := $(shell uname -s)
 CODESIGN_IDENTITY ?=
 
@@ -24,12 +24,12 @@ PYINSTALLER_COMMON := --noconfirm --clean --name $(APP_NAME) \
 .PHONY: help run build-onedir build-onefile
 
 help:
-	@echo "make run             - 以项目内 .agentz 为 AgentZ Home 启动"
-	@echo "make build-onedir    - 构建目录式发布包：dist/onedir/agentz/"
-	@echo "make build-onefile   - 构建单文件发布包：dist/onefile/agentz"
+	@echo "make run             - 以项目内 .az 为 AZ Home 启动"
+	@echo "make build-onedir    - 构建目录式发布包：dist/onedir/az/"
+	@echo "make build-onefile   - 构建单文件发布包：dist/onefile/az"
 
 run:
-	uv run main.py --agentz-home .agentz
+	uv run main.py --az-home .az
 
 build-onedir:
 	$(PYINSTALLER) $(PYINSTALLER_COMMON) --onedir \

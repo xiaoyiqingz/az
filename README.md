@@ -1,4 +1,4 @@
-# agentz
+# az
 
 ## Setup
 
@@ -59,17 +59,17 @@ scripts/run_tests.py    # test runner helper
 Session data is stored under:
 
 ```text
-${AGENTZ_HOME:-~/.agentz}/sessions/<session_id>/
+${AZ_HOME:-~/.az}/sessions/<session_id>/
 ```
 
-By default `AGENTZ_HOME` resolves to `~/.agentz`. Select a different home with
-`--agentz-home` or the process environment variable `AGENTZ_HOME` before
+By default `AZ_HOME` resolves to `~/.az`. Select a different home with
+`--az-home` or the process environment variable `AZ_HOME` before
 startup; it cannot be configured from the `.env` that lives inside the home.
 
-The application loads its runtime environment from `$AGENTZ_HOME/.env`. When
+The application loads its runtime environment from `$AZ_HOME/.env`. When
 `SKILLS_DIR` and `MCP_CONFIG_PATH` are omitted, it uses
-`$AGENTZ_HOME/skills` and `$AGENTZ_HOME/mcp.json` respectively. Use
-`--agentz-home` or the process environment variable `AGENTZ_HOME` to select a
+`$AZ_HOME/skills` and `$AZ_HOME/mcp.json` respectively. Use
+`--az-home` or the process environment variable `AZ_HOME` to select a
 different home before startup.
 
 Telemetry is disabled unless `OBS_BACKEND` is explicitly set to `logfire` or
@@ -80,7 +80,7 @@ The bound project directory is stored in the current session metadata. If `--pro
 
 ## MCP config
 
-The app loads MCP servers from `AGENTZ_HOME/mcp.json` by default.
+The app loads MCP servers from `AZ_HOME/mcp.json` by default.
 You can override the location in `.env`:
 
 ```bash
@@ -121,7 +121,7 @@ SKILLS_DIR=/custom/path/to/skills
 Each skill should be stored as:
 
 ```text
-$AGENTZ_HOME/skills/
+$AZ_HOME/skills/
   <skill_name>/
     SKILL.md
     REFERENCE.md        # optional
@@ -136,25 +136,25 @@ At runtime the skills toolset exposes:
 - `read_skill_resource`
 - `run_skill_script`
 
-The project wires this through `pydantic-ai-skills` `SkillsToolset`. The directory comes from `SKILLS_DIR`; when omitted, it defaults to `$AGENTZ_HOME/skills`.
+The project wires this through `pydantic-ai-skills` `SkillsToolset`. The directory comes from `SKILLS_DIR`; when omitted, it defaults to `$AZ_HOME/skills`.
 
 ## Build executable
 
 Install development dependencies with `uv sync --group dev`, then use the Makefile:
 
 ```bash
-make run             # uv run main.py --agentz-home .agentz
-make build-onedir    # dist/onedir/agentz/
-make build-onefile   # dist/onefile/agentz
+make run             # uv run main.py --az-home .az
+make build-onedir    # dist/onedir/az/
+make build-onefile   # dist/onefile/az
 ```
 
 The executable reads `.env`, optional `mcp.json`, optional `skills/`, and
-session data from AgentZ Home at runtime. Do not package those user-owned files
+session data from AZ Home at runtime. Do not package those user-owned files
 into the build output.
 
 Frozen builds disable Logfire's generic Pydantic plugin before importing
 Pydantic AI, because that plugin requires Python source unavailable inside a
-PyInstaller archive. AgentZ's explicit Pydantic AI tracing remains enabled.
+PyInstaller archive. AZ's explicit Pydantic AI tracing remains enabled.
 The frozen entry point also adds PyInstaller's bundle directory to the metadata
 search path for Pydantic AI's runtime package-version lookup.
 For local macOS testing, leave `CODESIGN_IDENTITY` unset and let PyInstaller
@@ -170,8 +170,8 @@ make build-onedir CODESIGN_IDENTITY="Developer ID Application: Your Name"
 在项目目录使用以下脚本后台启动、停止或重启 Web 服务；服务输出不会保留日志：
 
 ```bash
-./agentz-web.sh start
-./agentz-web.sh status
-./agentz-web.sh restart
-./agentz-web.sh stop
+./az-web.sh start
+./az-web.sh status
+./az-web.sh restart
+./az-web.sh stop
 ```

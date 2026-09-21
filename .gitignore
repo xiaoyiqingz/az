@@ -50,11 +50,13 @@ logs/
 # Temporary files
 *.tmp
 *.temp
-agentz_history
-agentz_message_history.json
-agentz-web.sh
+az_history
+az_message_history.json
+az-web.sh
 skills-lock.json
 
-# Project-local Codex skills
+# Project-local AZ data
 .agents/
+.az/
+# Legacy AgentZ runtime data; retained locally for manual migration.
 .agentz/

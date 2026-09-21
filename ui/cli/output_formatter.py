@@ -24,7 +24,7 @@ class LeftAlignedHeading(Heading):
         yield self.text
 
 
-class AgentZMarkdown(Markdown):
+class AZMarkdown(Markdown):
     """Project Markdown renderer with left-aligned headings."""
 
     elements = {**Markdown.elements, "heading_open": LeftAlignedHeading}
@@ -59,7 +59,7 @@ class MarkdownStreamFormatter:
 
         try:
             # 使用 rich 渲染 Markdown
-            markdown = AgentZMarkdown(self.buffer, code_theme="monokai")
+            markdown = AZMarkdown(self.buffer, code_theme="monokai")
             self.console.print(markdown, end="")
         except Exception:
             # 如果渲染失败，直接输出原始文本
@@ -127,7 +127,7 @@ class SimpleMarkdownFormatter:
 
         try:
             # 使用 rich 渲染 Markdown，支持语法高亮
-            markdown = AgentZMarkdown(self.buffer, code_theme="monokai")
+            markdown = AZMarkdown(self.buffer, code_theme="monokai")
             self.console.print(markdown)
         except Exception:
             # 如果渲染失败，直接输出原始文本
@@ -170,7 +170,7 @@ class LiveMarkdownFormatter:
         # 如果 Live 还未启动，先启动它
         if self.live is None:
             self.live = Live(
-                AgentZMarkdown("", code_theme="monokai"),
+                AZMarkdown("", code_theme="monokai"),
                 console=self.console,
                 refresh_per_second=30,
                 transient=False,
@@ -179,7 +179,7 @@ class LiveMarkdownFormatter:
 
         # 更新显示内容
         try:
-            markdown = AgentZMarkdown(self.buffer, code_theme="monokai")
+            markdown = AZMarkdown(self.buffer, code_theme="monokai")
             self.live.update(markdown)
         except Exception:
             # 如果渲染失败，显示原始文本
@@ -205,7 +205,7 @@ class LiveMarkdownFormatter:
             self._update_display()
         else:
             try:
-                markdown = AgentZMarkdown(self.buffer, code_theme="monokai")
+                markdown = AZMarkdown(self.buffer, code_theme="monokai")
                 self.live.update(markdown)
             except Exception:
                 self.live.update(self.buffer)

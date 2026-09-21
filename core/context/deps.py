@@ -16,7 +16,7 @@ class Deps:
     client: AsyncClient
     session_id: str
     conversation_id: str
-    agentz_home: Path
+    az_home: Path
     project_path: Path
     settings: Settings
     session_store: SessionStore

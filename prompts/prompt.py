@@ -57,7 +57,7 @@ def get_smart_assistant_prompt() -> str:
 
 def get_smart_assistant_prompt_bak() -> str:
     """
-    Return the compact, stable instructions shared by all AgentZ sessions.
+    Return the compact, stable instructions shared by all AZ sessions.
 
     Tool names, arguments, and descriptions are supplied by the runtime as
     schemas, so this prompt keeps only durable routing and safety rules.

@@ -41,7 +41,7 @@ class Settings:
     models: ModelSettings
     observability: ObservabilitySettings
     tavily_api_key: str | None
-    agentz_home: Path
+    az_home: Path
     mcp_config_path: Path
     skills_dir: Path
     context_target_tokens: int
@@ -59,7 +59,7 @@ def load_settings(env: dict[str, str] | None = None) -> Settings:
     values = env or os.environ
     base_path = Path(__file__).resolve().parent.parent
 
-    agentz_home = _resolve_path(values.get("AGENTZ_HOME", "~/.agentz"), base_path)
+    az_home = _resolve_path(values.get("AZ_HOME", "~/.az"), base_path)
 
     return Settings(
         models=ModelSettings(
@@ -97,13 +97,13 @@ def load_settings(env: dict[str, str] | None = None) -> Settings:
             langfuse_secret_key=values.get("LANGFUSE_SECRET_KEY"),
         ),
         tavily_api_key=values.get("TAVILY_API_KEY"),
-        agentz_home=agentz_home,
+        az_home=az_home,
         mcp_config_path=_resolve_path(values["MCP_CONFIG_PATH"], base_path)
         if values.get("MCP_CONFIG_PATH")
-        else agentz_home / "mcp.json",
+        else az_home / "mcp.json",
         skills_dir=_resolve_path(values["SKILLS_DIR"], base_path)
         if values.get("SKILLS_DIR")
-        else agentz_home / "skills",
+        else az_home / "skills",
         context_target_tokens=int(values.get("CONTEXT_TARGET_TOKENS", "48000")),
         context_keep_messages=int(values.get("CONTEXT_KEEP_MESSAGES", "20")),
         context_keep_tool_pairs=int(values.get("CONTEXT_KEEP_TOOL_PAIRS", "4")),

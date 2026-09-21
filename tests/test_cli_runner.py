@@ -58,7 +58,7 @@ class TestCliRunner(unittest.IsolatedAsyncioTestCase):
         def old_sigint_handler(_signum, _frame):
             raise KeyboardInterrupt
 
-        settings = SimpleNamespace(agentz_home=Path("/tmp/agentz-tests"))
+        settings = SimpleNamespace(az_home=Path("/tmp/az-tests"))
         with (
             patch.object(runner, "InputHandler", return_value=input_handler),
             patch.object(runner, "open_agent_session", open_session),

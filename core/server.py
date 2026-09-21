@@ -136,7 +136,7 @@ async def open_agent_session(
     """Open a session without assuming how its events will be presented."""
     configure_observability(settings)
     runtime = initialize_session_runtime(
-        agentz_home=settings.agentz_home,
+        az_home=settings.az_home,
         session_id=session_id,
         requested_project_path=requested_project_path,
     )
@@ -154,7 +154,7 @@ async def open_agent_session(
                 client=client,
                 session_id=session_id,
                 conversation_id=runtime.conversation_id,
-                agentz_home=settings.agentz_home,
+                az_home=settings.az_home,
                 project_path=runtime.project_path,
                 settings=settings,
                 session_store=runtime.session_store,
@@ -311,9 +311,9 @@ async def _handle_shell_approvals(
 def _strip_legacy_system_prompts(
     messages: list[ModelMessage],
 ) -> tuple[list[ModelMessage], bool]:
-    """Remove static prompts persisted before AgentZ switched to instructions.
+    """Remove static prompts persisted before AZ switched to instructions.
 
-    AgentZ historically had one static ``system_prompt``. Its content is now
+    AZ historically had one static ``system_prompt``. Its content is now
     supplied by the current agent as ``instructions``, so retaining those old
     parts would defeat the new history semantics and waste context tokens.
     """

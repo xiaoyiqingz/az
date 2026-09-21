@@ -35,27 +35,27 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="当前 session 绑定的项目目录；不传时默认使用当前工作目录",
     )
     parser.add_argument(
-        "--agentz-home",
-        help="AgentZ 数据与配置目录；不传时使用 AGENTZ_HOME 或 ~/.agentz",
+        "--az-home",
+        help="AZ 数据与配置目录；不传时使用 AZ_HOME 或 ~/.az",
     )
     parser.add_argument("--host", default="127.0.0.1", help="Web 服务监听地址")
     parser.add_argument("--port", type=int, default=8000, help="Web 服务监听端口")
     return parser.parse_args(argv)
 
 
-def _load_agentz_env(agentz_home_override: str | None) -> Path:
-    """Load the .env file stored under the resolved AgentZ home directory."""
-    raw_home = agentz_home_override or os.environ.get("AGENTZ_HOME", "~/.agentz")
-    agentz_home = Path(raw_home).expanduser()
-    if not agentz_home.is_absolute():
-        agentz_home = Path.cwd() / agentz_home
-    agentz_home = agentz_home.resolve()
+def _load_az_env(az_home_override: str | None) -> Path:
+    """Load the .env file stored under the resolved AZ home directory."""
+    raw_home = az_home_override or os.environ.get("AZ_HOME", "~/.az")
+    az_home = Path(raw_home).expanduser()
+    if not az_home.is_absolute():
+        az_home = Path.cwd() / az_home
+    az_home = az_home.resolve()
 
-    load_dotenv(agentz_home / ".env")
+    load_dotenv(az_home / ".env")
     # The config file location must be stable. Do not let a value inside that file
     # redirect the active home after it has already been selected.
-    os.environ["AGENTZ_HOME"] = str(agentz_home)
-    return agentz_home
+    os.environ["AZ_HOME"] = str(az_home)
+    return az_home
 
 
 def _configure_frozen_runtime() -> None:
@@ -68,7 +68,7 @@ def _configure_frozen_runtime() -> None:
             # imports genai-prices and asks importlib.metadata for its version.
             sys.path.append(str(bundle_dir))
         # Logfire's generic Pydantic plugin reads Python source with inspect,
-        # which is unavailable for modules inside PyInstaller's archive. AgentZ
+        # which is unavailable for modules inside PyInstaller's archive. AZ
         # continues to enable its explicit Pydantic AI instrumentation later.
         os.environ.setdefault("PYDANTIC_DISABLE_PLUGINS", "logfire-plugin")
 
@@ -77,8 +77,8 @@ def main():
     """主函数：处理用户输入并返回带感叹号的内容"""
     _configure_frozen_runtime()
     args = _parse_args()
-    # 在读取模型、MCP、skills 等配置前，先从 AgentZ Home 加载 .env。
-    _load_agentz_env(args.agentz_home)
+    # 在读取模型、MCP、skills 等配置前，先从 AZ Home 加载 .env。
+    _load_az_env(args.az_home)
     settings = load_settings()
     if args.mode == "web":
         from interfaces.http.server import run_web

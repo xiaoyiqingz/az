@@ -1,4 +1,4 @@
-"""AgentZ 的终端交互入口。"""
+"""AZ 的终端交互入口。"""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ async def run_cli(
 ) -> None:
     """Run the existing interactive CLI using the shared session service."""
     tool_status_labels = get_tool_status_labels()
-    input_handler = InputHandler(settings.agentz_home, session_id=session_id)
+    input_handler = InputHandler(settings.az_home, session_id=session_id)
     input_handler.initialize()
 
     # ``asyncio.run`` installs its own SIGINT handler before this coroutine
@@ -173,7 +173,7 @@ def _print_startup_panel(session: AgentSession, resumed: bool) -> None:
     Console().print(
         Panel.fit(
             "\n".join(lines),
-            title="[bold cyan]欢迎使用 AgentZ[/bold cyan]",
+            title="[bold cyan]欢迎使用 AZ[/bold cyan]",
             border_style="cyan",
             padding=(0, 1),
         )

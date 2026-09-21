@@ -13,7 +13,7 @@ from interfaces.http.app import _render_markdown, create_app
 class TestHttpApp(unittest.TestCase):
     def setUp(self):
         self.temp_dir = TemporaryDirectory()
-        self.settings = load_settings({"AGENTZ_HOME": self.temp_dir.name})
+        self.settings = load_settings({"AZ_HOME": self.temp_dir.name})
         self.client = TestClient(create_app(self.settings))
 
     def tearDown(self):
@@ -51,7 +51,7 @@ class TestHttpApp(unittest.TestCase):
 
     def test_lists_sessions_and_loads_visible_history(self):
         session_id = "019e688c-77a0-7d4a-8f50-0a8a0cddd48b"
-        store = SessionStore(self.settings.agentz_home, session_id)
+        store = SessionStore(self.settings.az_home, session_id)
         now = utc_now()
         store.save_meta(
             SessionMeta(

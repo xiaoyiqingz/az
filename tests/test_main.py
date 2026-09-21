@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from main import _load_agentz_env, _parse_args
+from main import _load_az_env, _parse_args
 
 
 class TestMain(unittest.TestCase):
@@ -21,10 +21,10 @@ class TestMain(unittest.TestCase):
 
         self.assertIsNone(args.project_path)
 
-    def test_parse_args_accepts_agentz_home(self):
-        args = _parse_args(["--agentz-home", "/tmp/agentz-home"])
+    def test_parse_args_accepts_az_home(self):
+        args = _parse_args(["--az-home", "/tmp/az-home"])
 
-        self.assertEqual(args.agentz_home, "/tmp/agentz-home")
+        self.assertEqual(args.az_home, "/tmp/az-home")
 
     def test_parse_args_supports_web_mode(self):
         args = _parse_args(["web", "--host", "0.0.0.0", "--port", "8080"])
@@ -33,20 +33,20 @@ class TestMain(unittest.TestCase):
         self.assertEqual(args.host, "0.0.0.0")
         self.assertEqual(args.port, 8080)
 
-    def test_load_agentz_env_reads_env_from_selected_home(self):
+    def test_load_az_env_reads_env_from_selected_home(self):
         with tempfile.TemporaryDirectory() as temp_dir:
-            agentz_home = Path(temp_dir)
-            (agentz_home / ".env").write_text(
-                "DEEPSEEK_API_KEY=test-key\nAGENTZ_HOME=/ignored-home\n",
+            az_home = Path(temp_dir)
+            (az_home / ".env").write_text(
+                "DEEPSEEK_API_KEY=test-key\nAZ_HOME=/ignored-home\n",
                 encoding="utf-8",
             )
 
             with patch.dict(os.environ, {}, clear=True):
-                loaded_home = _load_agentz_env(str(agentz_home))
+                loaded_home = _load_az_env(str(az_home))
 
-                self.assertEqual(loaded_home, agentz_home.resolve())
+                self.assertEqual(loaded_home, az_home.resolve())
                 self.assertEqual(os.environ["DEEPSEEK_API_KEY"], "test-key")
-                self.assertEqual(os.environ["AGENTZ_HOME"], str(agentz_home.resolve()))
+                self.assertEqual(os.environ["AZ_HOME"], str(az_home.resolve()))
 
 
 if __name__ == "__main__":

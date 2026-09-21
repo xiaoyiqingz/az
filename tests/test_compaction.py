@@ -55,7 +55,7 @@ class TestCompaction(unittest.TestCase):
 
         self.assertIsNone(file_read_key(call))
 
-    def test_summary_prompt_keeps_existing_agentz_schema(self):
+    def test_summary_prompt_keeps_existing_az_schema(self):
         self.assertIn("HISTORICAL SUMMARY", SUMMARY_PROMPT)
         self.assertIn("Relevant files and entities", SUMMARY_PROMPT)
         self.assertIn("{messages}", SUMMARY_PROMPT)

@@ -78,13 +78,13 @@ def create_app(
         return JSONResponse({"session_id": generate_session_id()}, status_code=201)
 
     async def list_sessions(_: Request) -> Response:
-        return JSONResponse({"sessions": _list_sessions(settings.agentz_home)})
+        return JSONResponse({"sessions": _list_sessions(settings.az_home)})
 
     async def history(request: Request) -> Response:
         session_id = _validate_session_id(request.path_params["session_id"])
         if session_id is None:
             return JSONResponse({"detail": "session_id 必须是 UUID"}, status_code=422)
-        store = SessionStore(settings.agentz_home, session_id)
+        store = SessionStore(settings.az_home, session_id)
         try:
             history_messages = store.load_message_history()
         except Exception:
@@ -102,7 +102,7 @@ def create_app(
             return JSONResponse({"detail": "请求体必须包含 prompt 字符串"}, status_code=422)
 
         if payload.usage_limit_action is not None:
-            store = SessionStore(settings.agentz_home, session_id)
+            store = SessionStore(settings.az_home, session_id)
             recovery = store.load_usage_limit_recovery()
             if recovery is None:
                 return JSONResponse({"detail": "没有可恢复的受限任务"}, status_code=409)
@@ -230,8 +230,8 @@ def _encode_sse(payload: dict[str, Any]) -> str:
     return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
 
-def _list_sessions(agentz_home: Path) -> list[dict[str, str | int | None]]:
-    sessions_dir = agentz_home / "sessions"
+def _list_sessions(az_home: Path) -> list[dict[str, str | int | None]]:
+    sessions_dir = az_home / "sessions"
     if not sessions_dir.exists():
         return []
 
@@ -242,7 +242,7 @@ def _list_sessions(agentz_home: Path) -> list[dict[str, str | int | None]]:
         session_id = _validate_session_id(directory.name)
         if session_id is None:
             continue
-        store = SessionStore(agentz_home, session_id)
+        store = SessionStore(az_home, session_id)
         try:
             meta = store.load_meta()
             if meta is None:

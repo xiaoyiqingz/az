@@ -12,7 +12,7 @@ from core.context.session_store import SessionStore
 class TestSessionRuntime(unittest.TestCase):
     def setUp(self) -> None:
         self.temp_dir = tempfile.TemporaryDirectory()
-        self.agentz_home = Path(self.temp_dir.name)
+        self.az_home = Path(self.temp_dir.name)
         self.cwd = Path(self.temp_dir.name).resolve()
 
     def tearDown(self) -> None:
@@ -20,7 +20,7 @@ class TestSessionRuntime(unittest.TestCase):
 
     def test_initialize_session_runtime_creates_meta_for_new_session(self):
         runtime = initialize_session_runtime(
-            self.agentz_home,
+            self.az_home,
             session_id="session-1",
             requested_project_path=str(self.cwd / "repo-a"),
             cwd=self.cwd,
@@ -36,13 +36,13 @@ class TestSessionRuntime(unittest.TestCase):
         self.assertFalse(saved_meta.resumed)
 
     def test_initialize_session_runtime_marks_existing_history_as_resumed(self):
-        store = SessionStore(self.agentz_home, session_id="session-1")
+        store = SessionStore(self.az_home, session_id="session-1")
         store.save_message_history(
             [ModelRequest(parts=[UserPromptPart(content="hello")])]
         )
 
         runtime = initialize_session_runtime(
-            self.agentz_home,
+            self.az_home,
             session_id="session-1",
             requested_project_path=str(self.cwd / "repo-a"),
             cwd=self.cwd,
@@ -55,7 +55,7 @@ class TestSessionRuntime(unittest.TestCase):
         self.assertTrue(saved_meta.resumed)
 
     def test_initialize_session_runtime_strictly_restores_project_path(self):
-        store = SessionStore(self.agentz_home, session_id="session-1")
+        store = SessionStore(self.az_home, session_id="session-1")
         store.save_meta(
             SessionMeta(
                 session_id="session-1",
@@ -65,7 +65,7 @@ class TestSessionRuntime(unittest.TestCase):
         )
 
         runtime = initialize_session_runtime(
-            self.agentz_home,
+            self.az_home,
             session_id="session-1",
             requested_project_path=str(self.cwd / "repo-cli"),
             cwd=self.cwd,
@@ -75,7 +75,7 @@ class TestSessionRuntime(unittest.TestCase):
         self.assertTrue(runtime.ignored_cli_project_path)
 
     def test_initialize_session_runtime_backfills_missing_project_path(self):
-        store = SessionStore(self.agentz_home, session_id="session-1")
+        store = SessionStore(self.az_home, session_id="session-1")
         store.save_meta(
             SessionMeta(
                 session_id="session-1",
@@ -84,7 +84,7 @@ class TestSessionRuntime(unittest.TestCase):
         )
 
         runtime = initialize_session_runtime(
-            self.agentz_home,
+            self.az_home,
             session_id="session-1",
             cwd=self.cwd,
         )

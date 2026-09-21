@@ -20,7 +20,7 @@ class TestConfig(unittest.TestCase):
         )
         self.assertIsNone(settings.observability.langfuse_public_key)
         self.assertIsNone(settings.observability.langfuse_secret_key)
-        self.assertEqual(settings.agentz_home, Path.home() / ".agentz")
+        self.assertEqual(settings.az_home, Path.home() / ".az")
 
     def test_load_settings_includes_mimo_defaults(self):
         settings = load_settings(
@@ -72,22 +72,22 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(settings.observability.langfuse_public_key, "pk-lf-test")
         self.assertEqual(settings.observability.langfuse_secret_key, "sk-lf-test")
 
-    def test_load_settings_accepts_agentz_home_override(self):
+    def test_load_settings_accepts_az_home_override(self):
         settings = load_settings(
             {
-                "AGENTZ_HOME": "/tmp/agentz-home",
+                "AZ_HOME": "/tmp/az-home",
                 "SKILLS_DIR": "./.agents/skills",
                 "MCP_CONFIG_PATH": "./mcp.json",
             }
         )
 
-        self.assertEqual(settings.agentz_home, Path("/tmp/agentz-home"))
+        self.assertEqual(settings.az_home, Path("/tmp/az-home"))
 
-    def test_load_settings_defaults_skills_and_mcp_to_agentz_home(self):
-        settings = load_settings({"AGENTZ_HOME": "/tmp/agentz-home"})
+    def test_load_settings_defaults_skills_and_mcp_to_az_home(self):
+        settings = load_settings({"AZ_HOME": "/tmp/az-home"})
 
-        self.assertEqual(settings.skills_dir, Path("/tmp/agentz-home/skills"))
-        self.assertEqual(settings.mcp_config_path, Path("/tmp/agentz-home/mcp.json"))
+        self.assertEqual(settings.skills_dir, Path("/tmp/az-home/skills"))
+        self.assertEqual(settings.mcp_config_path, Path("/tmp/az-home/mcp.json"))
 
     def test_load_settings_accepts_compaction_overrides(self):
         settings = load_settings(

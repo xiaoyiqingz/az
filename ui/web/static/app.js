@@ -8,7 +8,7 @@ const sessionList = document.querySelector("#session-list");
 
 let sessionId = null;
 let sending = false;
-const sessionStorageKey = "agentz.web.session_id";
+const sessionStorageKey = "az.web.session_id";
 
 function appendMessage(role, text = "") {
   const container = document.createElement("article");

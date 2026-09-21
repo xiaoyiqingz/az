@@ -1,4 +1,4 @@
-"""ASGI server entry point for AgentZ's local Web UI."""
+"""ASGI server entry point for AZ's local Web UI."""
 
 from __future__ import annotations
 
@@ -15,6 +15,6 @@ def run_web(
     port: int = 8000,
     default_project_path: str | None = None,
 ) -> None:
-    """Start the local AgentZ Web UI and its same-origin API."""
+    """Start the local AZ Web UI and its same-origin API."""
     app = create_app(settings, default_project_path=default_project_path)
     uvicorn.run(app, host=host, port=port)

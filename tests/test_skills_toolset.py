@@ -14,11 +14,11 @@ class TestSkillsToolset(unittest.TestCase):
         skills_dir = get_skills_dir(settings)
         self.assertTrue(str(skills_dir).endswith("custom-skills"))
 
-    def test_default_skills_dir_uses_agentz_home(self):
-        settings = load_settings({"AGENTZ_HOME": "/tmp/agentz-home"})
+    def test_default_skills_dir_uses_az_home(self):
+        settings = load_settings({"AZ_HOME": "/tmp/az-home"})
         self.assertEqual(
             str(get_skills_dir(settings)),
-            "/tmp/agentz-home/skills",
+            "/tmp/az-home/skills",
         )
 
     def test_skills_toolset_loads_standard_skill_directory(self):
