@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from commands.builtin_commands import CommandType
+from config.settings import load_settings
 from core.shell_approval import ShellApprovalManager
 from ui.cli import runner
 
@@ -33,7 +34,11 @@ class TestCliRunner(unittest.IsolatedAsyncioTestCase):
             project_path=Path("/workspace"),
             ignored_requested_project_path=False,
             all_messages=[],
-            deps=SimpleNamespace(shell_approvals=ShellApprovalManager("session-1")),
+            deps=SimpleNamespace(
+                shell_approvals=ShellApprovalManager("session-1"),
+                settings=load_settings({}),
+            ),
+            active_model=SimpleNamespace(model_name="deepseek-chat"),
             save_history=MagicMock(),
         )
         turn_started = asyncio.Event()

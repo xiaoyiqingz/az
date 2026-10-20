@@ -24,6 +24,7 @@ from pydantic_ai.messages import (
     ModelRequest,
     SystemPromptPart,
 )
+from pydantic_ai.models import Model
 from pydantic_ai.run import AgentRunResultEvent
 from pydantic_ai.usage import UsageLimits
 from pydantic_ai_harness import Shell
@@ -109,6 +110,8 @@ class AgentSession:
     agent: Agent
     deps: Deps
     all_messages: list[ModelMessage]
+    # 会话内切换后的模型；为 None 时使用 Agent 创建时的模型。
+    model: Model | None = None
 
     @property
     def session_id(self) -> str:
@@ -125,6 +128,16 @@ class AgentSession:
     def save_history(self) -> None:
         """Persist the latest successfully completed history."""
         self.runtime.session_store.save_message_history(self.all_messages)
+
+    @property
+    def active_model(self) -> Model:
+        return self.model or self.agent.model  # type: ignore[return-value]
+
+    def switch_model(self, settings: Settings) -> Model:
+        """Use the model selected by ``settings`` for later turns, keeping history."""
+        self.deps.settings = settings
+        self.model = build_model(settings)
+        return self.model
 
 
 @asynccontextmanager
@@ -185,6 +198,7 @@ async def stream_session_turn(
     try:
         async with session.agent.run_stream_events(
             user_input,
+            model=session.model,
             deps=session.deps,
             message_history=session.all_messages,
             conversation_id=session.runtime.conversation_id,

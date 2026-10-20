@@ -21,6 +21,7 @@ from core.stream_event_handler import consume_stream_events, render_message_hist
 from tools.register import get_tool_status_labels
 
 from .input_handler import InputHandler
+from .model_command import describe_model, handle_model_command, is_model_command
 from .output_formatter import create_formatter
 
 
@@ -87,6 +88,10 @@ async def run_cli(
                                 print("当前没有可恢复的受限任务。")
                                 continue
                             user_input = build_usage_limit_prompt(recovery, recovery_action)
+                        if is_model_command(user_input):
+                            print(await handle_model_command(session, user_input))
+                            input_handler.save_history()
+                            continue
                         is_builtin, result, command_type = process_builtin_command(
                             user_input, session_id=session_id
                         )
@@ -165,6 +170,7 @@ def _print_startup_panel(session: AgentSession, resumed: bool) -> None:
         "请输入内容（生成时按 Ctrl-C 取消本轮；空闲时按 Ctrl-C 退出）",
         f"当前 session: {session.session_id}",
         f"当前项目目录: {session.project_path}",
+        f"当前模型: {describe_model(session)}（/model 切换）",
     ]
     if resumed:
         lines.append("已根据 --resume 加载该 session 的历史。")

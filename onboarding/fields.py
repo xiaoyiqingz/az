@@ -32,6 +32,8 @@ class EnvField:
     # 为 True 时，值可以为空，但键仍须出现在 .env 中（表示用户已做过选择）。
     allow_empty: bool = False
     url: bool = False
+    # 只属于某个模型的配置项，用于 /model 切换时判断该模型是否已配置。
+    provider: str | None = None
     when: Callable[[Values], bool] = lambda _values: True
 
     def is_missing(self, values: Values) -> bool:
@@ -72,17 +74,30 @@ def _hosted_model_fields(
                 f"{title} 接口地址",
                 default=default_base_url,
                 url=True,
+                provider=provider,
                 when=when,
             )
         )
     fields += [
-        EnvField(f"{prefix}_MODEL_NAME", f"{title} 模型名称", default=default_model, when=when),
-        EnvField(f"{prefix}_API_KEY", f"{title} API Key", kind="secret", when=when),
+        EnvField(
+            f"{prefix}_MODEL_NAME",
+            f"{title} 模型名称",
+            default=default_model,
+            provider=provider,
+            when=when,
+        ),
+        EnvField(
+            f"{prefix}_API_KEY",
+            f"{title} API Key",
+            kind="secret",
+            provider=provider,
+            when=when,
+        ),
     ]
     return fields
 
 
-_PROVIDER_TITLES = {
+PROVIDER_TITLES = {
     "deepseek": "DeepSeek",
     "qwen": "通义千问 Qwen",
     "mimo": "小米 MiMo",
@@ -95,7 +110,7 @@ ENV_FIELDS: tuple[EnvField, ...] = (
         "使用的模型",
         kind="select",
         default="deepseek",
-        choices=tuple(Choice(p, _PROVIDER_TITLES[p]) for p in MODEL_PROVIDERS),
+        choices=tuple(Choice(p, PROVIDER_TITLES[p]) for p in MODEL_PROVIDERS),
     ),
     # DeepSeekProvider 自带固定接口地址，因此不询问 base url。
     *_hosted_model_fields(
@@ -118,12 +133,14 @@ ENV_FIELDS: tuple[EnvField, ...] = (
         "Ollama 接口地址",
         default="http://localhost:11434/v1",
         url=True,
+        provider="ollama",
         when=_provider_is("ollama"),
     ),
     EnvField(
         "OLLAMA_MODEL_NAME",
         "Ollama 模型名称",
         default="qwen3:8b",
+        provider="ollama",
         when=_provider_is("ollama"),
     ),
     EnvField(
@@ -178,3 +195,13 @@ ENV_FIELDS: tuple[EnvField, ...] = (
 def missing_fields(values: Values) -> list[EnvField]:
     """按提问顺序返回当前取值下缺失或不合法的配置项。"""
     return [field for field in ENV_FIELDS if field.when(values) and field.is_missing(values)]
+
+
+def missing_provider_fields(values: Values, provider: str) -> list[EnvField]:
+    """假设切换到 ``provider`` 时，它自身缺失或不合法的配置项。"""
+    selected = {**values, "AZ_MODEL_PROVIDER": provider}
+    return [
+        field
+        for field in ENV_FIELDS
+        if field.provider == provider and field.is_missing(selected)
+    ]

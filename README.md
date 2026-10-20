@@ -81,6 +81,12 @@ existing lines, comments and file permissions. Run
 selects the chat model: `deepseek`, `qwen`, `mimo` or `ollama`. Web mode
 assumes the configuration is already complete.
 
+Inside the CLI, `/model` opens a menu showing each model's status, and
+`/model <name>` switches directly. A model that is already configured takes
+effect immediately; otherwise only its missing settings are asked for first.
+The conversation history is kept, and the choice is saved as
+`AZ_MODEL_PROVIDER` for the next startup.
+
 Telemetry is disabled unless `OBS_BACKEND` is explicitly set to `logfire` or
 `langfuse`. The Langfuse backend additionally requires `LANGFUSE_PUBLIC_KEY`
 and `LANGFUSE_SECRET_KEY`.

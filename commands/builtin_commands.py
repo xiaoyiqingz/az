@@ -17,6 +17,7 @@ SLASH_COMMAND_DESCRIPTIONS = {
     "/q": "退出程序",
     "/version": "显示版本信息",
     "/clear": "清屏",
+    "/model": "切换模型（/model <deepseek|qwen|mimo|ollama>）",
     "/time": "查询当前时间",
     "/date": "查询当前日期",
     "/weather": "查询天气和穿衣建议",
@@ -127,6 +128,7 @@ def _handle_help() -> Tuple[bool, str]:
   /help            - 显示此帮助信息
   /version         - 显示版本信息
   /clear           - 清屏
+  /model [名称]     - 切换模型，未配置的模型会引导补全配置
 
 转换型命令（转换为用户输入传给 AI）:
   /time            - 查询当前时间并获取相关信息
