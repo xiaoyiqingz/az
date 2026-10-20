@@ -76,6 +76,11 @@ def _configure_frozen_runtime() -> None:
 def main():
     """主函数：处理用户输入并返回带感叹号的内容"""
     _configure_frozen_runtime()
+    # 必须在 _configure_frozen_runtime() 之后导入 Pydantic AI。
+    import pydantic_ai
+
+    # 关闭 pydantic-ai 首次运行 Agent 时打印的启动横幅。
+    pydantic_ai.BANNER_ENABLED = False
     args = _parse_args()
     # 在读取模型、MCP、skills 等配置前，先从 AZ Home 加载 .env。
     _load_az_env(args.az_home)

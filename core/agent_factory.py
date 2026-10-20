@@ -1,7 +1,7 @@
 from typing import Any, Optional, Type
 
 from pydantic_ai import Agent, toolsets
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.ollama import OllamaProvider
 
 from config.settings import Settings
@@ -40,7 +40,7 @@ def create_agent(
         raise ValueError("model_name 和 ollama_base_url 未提供，且未传入 settings")
 
     # 创建模型
-    model = OpenAIModel(
+    model = OpenAIChatModel(
         model_name,
         provider=OllamaProvider(base_url=ollama_base_url),
     )
