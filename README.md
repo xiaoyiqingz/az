@@ -70,7 +70,16 @@ The application loads its runtime environment from `$AZ_HOME/.env`. When
 `SKILLS_DIR` and `MCP_CONFIG_PATH` are omitted, it uses
 `$AZ_HOME/skills` and `$AZ_HOME/mcp.json` respectively. Use
 `--az-home` or the process environment variable `AZ_HOME` to select a
-different home before startup.
+different home before startup. Values in `$AZ_HOME/.env` take precedence over
+variables already exported in the shell.
+
+On CLI startup, if `$AZ_HOME/.env` is missing or incomplete, a setup wizard
+asks for the missing values in order (model provider, base URL, model name,
+API key, `OBS_BACKEND`, planning mode) and writes them back to `.env`, keeping
+existing lines, comments and file permissions. Run
+`uv run main.py --setup` to review every value again. `AZ_MODEL_PROVIDER`
+selects the chat model: `deepseek`, `qwen`, `mimo` or `ollama`. Web mode
+assumes the configuration is already complete.
 
 Telemetry is disabled unless `OBS_BACKEND` is explicitly set to `logfire` or
 `langfuse`. The Langfuse backend additionally requires `LANGFUSE_PUBLIC_KEY`

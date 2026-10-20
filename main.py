@@ -38,20 +38,36 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--az-home",
         help="AZ 数据与配置目录；不传时使用 AZ_HOME 或 ~/.az",
     )
+    parser.add_argument(
+        "--setup",
+        action="store_true",
+        help="重新运行配置向导，逐项确认 AZ Home 下的 .env",
+    )
     parser.add_argument("--host", default="127.0.0.1", help="Web 服务监听地址")
     parser.add_argument("--port", type=int, default=8000, help="Web 服务监听端口")
     return parser.parse_args(argv)
 
 
-def _load_az_env(az_home_override: str | None) -> Path:
-    """Load the .env file stored under the resolved AZ home directory."""
-    raw_home = az_home_override or os.environ.get("AZ_HOME", "~/.az")
+def _resolve_az_home(az_home_override: str | None) -> Path:
+    """Resolve AZ home from --az-home, then AZ_HOME, then ~/.az."""
+    # Blank values count as unset; otherwise Path("") would silently mean the cwd.
+    raw_home = (
+        (az_home_override or "").strip()
+        or os.environ.get("AZ_HOME", "").strip()
+        or "~/.az"
+    )
     az_home = Path(raw_home).expanduser()
     if not az_home.is_absolute():
         az_home = Path.cwd() / az_home
-    az_home = az_home.resolve()
+    return az_home.resolve()
 
-    load_dotenv(az_home / ".env")
+
+def _load_az_env(az_home_override: str | None) -> Path:
+    """Load the .env file stored under the resolved AZ home directory."""
+    az_home = _resolve_az_home(az_home_override)
+
+    # .env is the source of truth: its values take precedence over exported ones.
+    load_dotenv(az_home / ".env", override=True)
     # The config file location must be stable. Do not let a value inside that file
     # redirect the active home after it has already been selected.
     os.environ["AZ_HOME"] = str(az_home)
@@ -82,8 +98,15 @@ def main():
     # 关闭 pydantic-ai 首次运行 Agent 时打印的启动横幅。
     pydantic_ai.BANNER_ENABLED = False
     args = _parse_args()
+    # 只解析一次 AZ Home，配置向导写入与随后加载的必须是同一个 .env。
+    az_home = _resolve_az_home(args.az_home)
+    # Web 模式默认已配置好，只有 CLI 或显式 --setup 时才进入配置向导。
+    if args.mode == "cli" or args.setup:
+        from onboarding import ensure_env_configured
+
+        ensure_env_configured(az_home, reconfigure=args.setup)
     # 在读取模型、MCP、skills 等配置前，先从 AZ Home 加载 .env。
-    _load_az_env(args.az_home)
+    _load_az_env(str(az_home))
     settings = load_settings()
     if args.mode == "web":
         from interfaces.http.server import run_web

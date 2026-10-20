@@ -5,6 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+ModelProvider = Literal["deepseek", "qwen", "mimo", "ollama"]
+MODEL_PROVIDERS: tuple[ModelProvider, ...] = ("deepseek", "qwen", "mimo", "ollama")
+
 
 @dataclass(frozen=True)
 class HostedModelSettings:
@@ -16,12 +19,14 @@ class HostedModelSettings:
 @dataclass(frozen=True)
 class OllamaModelSettings:
     base_url: str
+    model_name: str
     model_ds: str
     model_qwen: str
 
 
 @dataclass(frozen=True)
 class ModelSettings:
+    provider: ModelProvider
     deepseek: HostedModelSettings
     qwen: HostedModelSettings
     mimo: HostedModelSettings
@@ -63,6 +68,7 @@ def load_settings(env: dict[str, str] | None = None) -> Settings:
 
     return Settings(
         models=ModelSettings(
+            provider=_load_model_provider(values),
             deepseek=HostedModelSettings(
                 model_name=values.get("DEEPSEEK_MODEL_NAME", "deepseek-chat"),
                 api_key=values.get("DEEPSEEK_API_KEY"),
@@ -84,6 +90,7 @@ def load_settings(env: dict[str, str] | None = None) -> Settings:
                 base_url=values.get(
                     "OLLAMA_BASE_URL", "http://localhost:11434/v1"
                 ),
+                model_name=values.get("OLLAMA_MODEL_NAME", "qwen3:8b"),
                 model_ds=values.get("OLLAMA_MODEL_DS", "deepseek-r1:7b"),
                 model_qwen=values.get("OLLAMA_MODEL_QWEN", "qwen3:8b"),
             ),
@@ -123,6 +130,13 @@ def _resolve_path(raw_path: str, base_path: Path) -> Path:
     if candidate.is_absolute():
         return candidate
     return (base_path / candidate).resolve()
+
+
+def _load_model_provider(values: dict[str, str]) -> ModelProvider:
+    value = values.get("AZ_MODEL_PROVIDER", "deepseek")
+    if value not in MODEL_PROVIDERS:
+        raise ValueError(f"AZ_MODEL_PROVIDER 必须为 {', '.join(MODEL_PROVIDERS)} 之一")
+    return value  # type: ignore[return-value]
 
 
 def _load_planning_cache_ttl(values: dict[str, str]) -> Literal["5m", "1h"]:

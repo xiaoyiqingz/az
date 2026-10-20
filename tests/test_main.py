@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from main import _load_az_env, _parse_args
+from main import _load_az_env, _parse_args, _resolve_az_home
 
 
 class TestMain(unittest.TestCase):
@@ -47,6 +47,31 @@ class TestMain(unittest.TestCase):
                 self.assertEqual(loaded_home, az_home.resolve())
                 self.assertEqual(os.environ["DEEPSEEK_API_KEY"], "test-key")
                 self.assertEqual(os.environ["AZ_HOME"], str(az_home.resolve()))
+
+    def test_load_az_env_prefers_env_file_over_exported_values(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            az_home = Path(temp_dir)
+            (az_home / ".env").write_text("DEEPSEEK_API_KEY=from-file\n", encoding="utf-8")
+
+            with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "from-shell"}, clear=True):
+                _load_az_env(str(az_home))
+
+                self.assertEqual(os.environ["DEEPSEEK_API_KEY"], "from-file")
+
+    def test_resolve_az_home_precedence(self):
+        with patch.dict(os.environ, {"AZ_HOME": "/tmp/from-env"}, clear=True):
+            self.assertEqual(_resolve_az_home("/tmp/from-arg"), Path("/tmp/from-arg").resolve())
+            self.assertEqual(_resolve_az_home(None), Path("/tmp/from-env").resolve())
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(_resolve_az_home(None), (Path.home() / ".az").resolve())
+
+    def test_resolve_az_home_treats_blank_values_as_unset(self):
+        with patch.dict(os.environ, {"AZ_HOME": "  "}, clear=True):
+            self.assertEqual(_resolve_az_home(""), (Path.home() / ".az").resolve())
+
+    def test_parse_args_accepts_setup(self):
+        self.assertTrue(_parse_args(["--setup"]).setup)
+        self.assertFalse(_parse_args([]).setup)
 
 
 if __name__ == "__main__":

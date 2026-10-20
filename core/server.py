@@ -31,7 +31,7 @@ from pydantic_ai_harness.planning import Planning
 
 from config.settings import Settings
 from infra.observability import configure_observability, instrument_http_client
-from models.deepseek import build_deepseek_model
+from models.factory import build_model
 from prompts.prompt import get_smart_assistant_prompt
 from tools.register import build_agent_tools
 
@@ -82,7 +82,7 @@ def create_agent(settings: Settings, project_path: Path) -> Agent:
         capabilities.append(Planning(cache_ttl=settings.planning_cache_ttl))
 
     agent_kwargs = {
-        "model": build_deepseek_model(settings),
+        "model": build_model(settings),
         "deps_type": Deps,
         "instructions": get_smart_assistant_prompt(),
         "capabilities": capabilities,

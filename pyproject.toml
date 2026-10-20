@@ -16,6 +16,7 @@ dependencies = [
     "starlette>=0.40",
     "uvicorn>=0.30",
     "markdown-it-py>=3.0.0",
+    "questionary>=2.1.0",
 ]
 
 [tool.logfire]
