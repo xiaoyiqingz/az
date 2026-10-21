@@ -58,7 +58,7 @@ def ensure_env_configured(az_home: Path, *, reconfigure: bool = False) -> None:
         keys = ", ".join(field.key for field in missing)
         raise SystemExit(
             f"{env_path} 配置不完整，缺少：{keys}\n"
-            "请在终端中运行 `uv run main.py --setup` 完成配置。"
+            f"请在终端中运行 `{_setup_command()}` 完成配置。"
         )
 
     _print_intro(env_path, current, missing, reconfigure)
@@ -75,6 +75,13 @@ def ensure_env_configured(az_home: Path, *, reconfigure: bool = False) -> None:
 
 def _is_interactive() -> bool:
     return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def _setup_command() -> str:
+    """打包产物没有源码和 uv，提示直接运行可执行文件本身。"""
+    if getattr(sys, "frozen", False):
+        return f"{Path(sys.executable).name} --setup"
+    return "uv run main.py --setup"
 
 
 def _print_intro(

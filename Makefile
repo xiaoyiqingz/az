@@ -14,6 +14,7 @@ endif
 
 PYINSTALLER_COMMON := --noconfirm --clean --name $(APP_NAME) \
 	$(PYINSTALLER_PLATFORM_ARGS) \
+	--add-data "$(CURDIR)/ui/web/static:ui/web/static" \
 	--collect-all pydantic_ai \
 	--collect-all pydantic_ai_harness \
 	--collect-all pydantic_ai_skills \
@@ -21,12 +22,13 @@ PYINSTALLER_COMMON := --noconfirm --clean --name $(APP_NAME) \
 	--copy-metadata fastmcp-slim \
 	--copy-metadata mcp
 
-.PHONY: help run build-onedir build-onefile
+.PHONY: help run build-onedir build-onefile clean
 
 help:
 	@echo "make run             - 以项目内 .az 为 AZ Home 启动"
 	@echo "make build-onedir    - 构建目录式发布包：dist/onedir/az/"
 	@echo "make build-onefile   - 构建单文件发布包：dist/onefile/az"
+	@echo "make clean           - 删除构建中间目录 build/ 和发布目录 dist/"
 
 run:
 	uv run main.py --az-home .az
@@ -44,3 +46,6 @@ build-onefile:
 		--workpath $(BUILD_DIR)/onefile \
 		--specpath $(BUILD_DIR)/spec \
 		$(ENTRYPOINT)
+
+clean:
+	rm -rf $(BUILD_DIR) $(DIST_DIR)
