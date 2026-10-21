@@ -8,16 +8,37 @@ from pathlib import Path
 from typing import Any
 
 import questionary
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 from config.settings import MODEL_PROVIDERS
 from onboarding.env_file import env_file_path, read_env_file, write_env_values
 from onboarding.fields import (
     ENV_FIELDS,
     PROVIDER_TITLES,
+    SECTIONS,
     EnvField,
     missing_fields,
     missing_provider_fields,
 )
+
+_ACCENT = "#5f87ff"
+_console = Console(highlight=False)
+_STYLE = questionary.Style(
+    [
+        ("qmark", f"fg:{_ACCENT} bold"),
+        ("question", "bold"),
+        ("answer", "fg:#00af87 bold"),
+        ("pointer", f"fg:{_ACCENT} bold"),
+        ("highlighted", f"fg:{_ACCENT} bold"),
+        ("selected", "fg:#00af87"),
+        ("instruction", "fg:#808080"),
+        ("text", ""),
+    ]
+)
+_QMARK = "◆"
 
 
 def ensure_env_configured(az_home: Path, *, reconfigure: bool = False) -> None:
@@ -42,12 +63,14 @@ def ensure_env_configured(az_home: Path, *, reconfigure: bool = False) -> None:
 
     _print_intro(env_path, current, missing, reconfigure)
     try:
-        updates = _ask(current, reconfigure=reconfigure)
+        updates = _ask(current, missing, reconfigure=reconfigure)
     except KeyboardInterrupt:
-        raise SystemExit("\n已取消配置，.env 未做任何修改。") from None
+        _console.print("\n[yellow]已取消配置，.env 未做任何修改。[/]")
+        raise SystemExit(1) from None
 
     write_env_values(az_home, updates)
-    questionary.print(f"✔ 配置已保存到 {env_path}\n", style="bold fg:ansigreen")
+    _print_summary({**current, **updates}, updates)
+    _console.print(f"[bold green]✔ 配置已保存到[/] [cyan]{env_path}[/]\n")
 
 
 def _is_interactive() -> bool:
@@ -60,29 +83,91 @@ def _print_intro(
     missing: list[EnvField],
     reconfigure: bool,
 ) -> None:
-    questionary.print("AZ 配置向导", style="bold")
     if reconfigure:
-        message = f"将重新配置 {env_path}，直接回车保留当前值。"
+        message = "将逐项确认现有配置，直接回车保留当前值。"
     elif not current:
-        message = f"未找到 {env_path}，开始初始化配置。"
+        message = "首次启动，回答几个问题即可完成配置。"
     else:
-        message = f"{env_path} 缺少以下配置：{', '.join(f.key for f in missing)}"
-    questionary.print(message + "\n", style="fg:ansiyellow")
+        message = f"配置不完整，还需补充 {len(missing)} 项：{', '.join(f.key for f in missing)}"
+    body = Text.assemble(
+        (message, "bold"),
+        "\n",
+        ("配置文件  ", "dim"),
+        (str(env_path), "cyan"),
+        "\n",
+        ("↑↓ 选择 · 回车确认 · Ctrl-C 取消（不会修改文件）", "dim"),
+    )
+    _console.print()
+    _console.print(
+        Panel(
+            body,
+            title="[bold] AZ 配置向导 [/]",
+            title_align="left",
+            border_style=_ACCENT,
+            padding=(1, 2),
+            expand=False,
+        )
+    )
 
 
-def _ask(current: dict[str, str], *, reconfigure: bool) -> dict[str, str]:
-    """按字段顺序提问；前面的回答会影响后面哪些字段适用。"""
+def _ask(current: dict[str, str], missing: list[EnvField], *, reconfigure: bool) -> dict[str, str]:
+    """按分组和字段顺序提问；前面的回答会影响后面哪些字段适用。"""
+    # 分组内的回答只会增减本组字段，因此步骤总数可以提前确定。
+    sections = SECTIONS if reconfigure else [s for s in SECTIONS if any(f.section == s for f in missing)]
     values = dict(current)
     updates: dict[str, str] = {}
-    for field in ENV_FIELDS:
-        if not field.when(values):
-            continue
-        if not reconfigure and not field.is_missing(values):
-            continue
-        answer = _prompt(field, values.get(field.key))
-        values[field.key] = answer
-        updates[field.key] = answer
+    for step, section in enumerate(sections, start=1):
+        _print_section(step, len(sections), section)
+        for field in ENV_FIELDS:
+            if field.section != section or not field.when(values):
+                continue
+            if not reconfigure and not field.is_missing(values):
+                continue
+            answer = _prompt(field, values.get(field.key))
+            values[field.key] = answer
+            updates[field.key] = answer
     return updates
+
+
+def _print_section(step: int, total: int, section: str) -> None:
+    _console.print()
+    _console.rule(f"[bold {_ACCENT}]步骤 {step}/{total}[/]  [bold]{section}[/]", align="left", style="dim")
+
+
+def _print_summary(values: dict[str, str], updates: dict[str, str]) -> None:
+    table = Table(box=None, show_header=False, padding=(0, 2, 0, 0))
+    table.add_column(style="dim", no_wrap=True)
+    table.add_column(overflow="fold")
+    table.add_column(justify="right", no_wrap=True)
+    for field in ENV_FIELDS:
+        if field.key not in values or not field.when(values):
+            continue
+        mark = "[green]● 已更新[/]" if field.key in updates else ""
+        table.add_row(field.key, _display_value(field, values[field.key]), mark)
+    _console.print()
+    _console.print(
+        Panel(
+            table,
+            title="[bold] 配置汇总 [/]",
+            title_align="left",
+            border_style="green",
+            padding=(1, 2),
+            expand=False,
+        )
+    )
+
+
+def _display_value(field: EnvField, value: str) -> str:
+    if field.kind == "secret":
+        return _mask(value)
+    titles = {choice.value: choice.title for choice in field.choices}
+    return titles.get(value, value) or "（空）"
+
+
+def _mask(secret: str) -> str:
+    if len(secret) <= 8:
+        return "•" * 8
+    return f"{secret[:3]}{'•' * 6}{secret[-4:]}"
 
 
 async def choose_provider(az_home: Path, current: str) -> str:
@@ -94,7 +179,15 @@ async def choose_provider(az_home: Path, current: str) -> str:
             "已配置" if not missing_provider_fields(values, provider) else "未配置"
         )
         choices.append(questionary.Choice(f"{PROVIDER_TITLES[provider]}（{status}）", value=provider))
-    return await questionary.select("切换到哪个模型", choices=choices, default=current).unsafe_ask_async()
+    return await questionary.select(
+        "切换到哪个模型",
+        choices=choices,
+        default=current,
+        qmark=_QMARK,
+        pointer="❯",
+        style=_STYLE,
+        instruction="（↑↓ 选择，回车确认）",
+    ).unsafe_ask_async()
 
 
 async def ensure_provider_configured(az_home: Path, provider: str) -> None:
@@ -106,9 +199,9 @@ async def ensure_provider_configured(az_home: Path, provider: str) -> None:
     current = read_env_file(env_file_path(az_home))
     missing = missing_provider_fields(current, provider)
     if missing:
-        questionary.print(
-            f"{PROVIDER_TITLES[provider]} 尚未配置，请补充：{', '.join(f.key for f in missing)}",
-            style="fg:ansiyellow",
+        _console.print(
+            f"\n[yellow]●[/] [bold]{PROVIDER_TITLES[provider]}[/] 尚未配置，"
+            f"还需补充 {len(missing)} 项（Ctrl-C 取消）"
         )
 
     updates: dict[str, str] = {}
@@ -135,19 +228,28 @@ def _question(
     field: EnvField, existing: str | None
 ) -> tuple[questionary.Question, Callable[[Any], str]]:
     """构建字段对应的提问，以及把回答转换为 .env 取值的函数。"""
+    if field.hint:
+        _console.print(f"  [dim]{field.hint}[/]")
+    common: dict[str, Any] = {"qmark": _QMARK, "style": _STYLE}
     valid_existing = existing if existing is not None and field.validate(existing) is None else None
     default = valid_existing if valid_existing is not None else field.default
 
     if field.kind == "select":
         question = questionary.select(
             field.label,
-            choices=[questionary.Choice(c.title, value=c.value) for c in field.choices],
+            choices=[
+                questionary.Choice(c.title, value=c.value, description=c.description or None)
+                for c in field.choices
+            ],
             default=default,
+            pointer="❯",
+            instruction=" ",
+            **common,
         )
         return question, str
 
     if field.kind == "confirm":
-        question = questionary.confirm(field.label, default=default == "true")
+        question = questionary.confirm(field.label, default=default == "true", **common)
         return question, lambda confirmed: "true" if confirmed else "false"
 
     if field.kind == "secret":
@@ -156,10 +258,11 @@ def _question(
         question = questionary.password(
             message,
             validate=lambda value: (bool(valid_existing) and not value) or _validator(field)(value),
+            **common,
         )
         return question, lambda answer: valid_existing if valid_existing and not answer else answer.strip()
 
-    question = questionary.text(field.label, default=default, validate=_validator(field))
+    question = questionary.text(field.label, default=default, validate=_validator(field), **common)
     return question, lambda answer: answer.strip()
 
 

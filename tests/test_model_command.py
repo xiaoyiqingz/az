@@ -1,10 +1,13 @@
 import asyncio
+import io
 import os
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
+
+from rich.console import Console
 
 from config.settings import load_settings
 from onboarding import ensure_provider_configured
@@ -44,6 +47,10 @@ class TestMissingProviderFields(unittest.TestCase):
 
 class TestModelCommand(unittest.TestCase):
     def setUp(self):
+        # 向导界面输出到内存，避免污染测试输出。
+        console_patch = patch("onboarding.wizard._console", Console(file=io.StringIO()))
+        console_patch.start()
+        self.addCleanup(console_patch.stop)
         self.temp_dir = tempfile.TemporaryDirectory()
         self.az_home = Path(self.temp_dir.name)
         write_env_values(self.az_home, BASE_ENV)

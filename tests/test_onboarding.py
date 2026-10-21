@@ -1,9 +1,12 @@
+import io
 import os
 import stat
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+from rich.console import Console
 
 from onboarding import ensure_env_configured
 from onboarding.env_file import read_env_file, write_env_values
@@ -149,6 +152,10 @@ class TestEnvFile(unittest.TestCase):
 
 class TestEnsureEnvConfigured(unittest.TestCase):
     def setUp(self):
+        # 向导界面输出到内存，避免污染测试输出。
+        console_patch = patch("onboarding.wizard._console", Console(file=io.StringIO()))
+        console_patch.start()
+        self.addCleanup(console_patch.stop)
         self.temp_dir = tempfile.TemporaryDirectory()
         self.az_home = Path(self.temp_dir.name)
         self.env_path = self.az_home / ".env"
